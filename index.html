@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>SMN — Sistema de Mensagens Nova Nexus</title>
+  <style>
+    :root{
+      --bg:#050814;
+      --panel:#0B1220;
+      --panel2:#111827;
+      --line:#1E293B;
+      --text:#E5E7EB;
+      --muted:#7C8AA5;
+      --cyan:#22D3EE;
+      --cyan2:#06B6D4;
+      --blue:#93C5FD;
+      --green:#22C55E;
+      --warn:#FBBF24;
+      --danger:#EF4444;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{
+      font-family:"Segoe UI",system-ui,sans-serif;
+      background:var(--bg);
+      color:var(--text);
+      height:100vh;
+      overflow:hidden;
+    }
+    .app{display:flex;flex-direction:column;height:100vh}
+
+    /* HEADER */
+    header{
+      height:74px;background:var(--panel);
+      border-bottom:1px solid var(--line);
+      display:flex;align-items:center;justify-content:space-between;
+      padding:0 18px;
+    }
+    .brand{display:flex;flex-direction:column}
+    .brand h1{font-size:28px;color:var(--cyan);letter-spacing:.5px}
+    .brand span{font-size:12px;color:var(--muted)}
+    .status{text-align:right;font-size:13px}
+    .status .on{color:var(--green);font-weight:700}
+    .status .off{color:var(--danger);font-weight:700}
+    .status small{color:var(--muted);display:block;margin-top:2px}
+
+    /* BODY */
+    main{flex:1;display:grid;grid-template-columns:280px 1fr;min-height:0}
+    aside{
+      background:var(--panel);
+      border-right:1px solid var(--line);
+      padding:16px;overflow:auto;
+    }
+    aside h2{
+      font-size:12px;color:var(--muted);letter-spacing:1px;
+      margin:12px 0 8px;
+    }
+    .user-card{
+      background:var(--panel2);border:1px solid var(--line);
+      border-radius:16px;padding:14px;margin-bottom:8px;
+    }
+    .user-card b{color:var(--cyan)}
+    .user-card p{color:var(--muted);font-size:12px;margin-top:4px}
+    .channel,.member{
+      width:100%;text-align:left;background:#152033;color:var(--text);
+      border:none;border-radius:12px;padding:10px 12px;margin:4px 0;
+      cursor:pointer;font-size:14px;
+    }
+    .channel:hover,.member:hover{background:#1E293B}
+    .channel.active{background:#0E4A5A;color:var(--cyan);border:1px solid #155E75}
+
+    .chat-wrap{display:flex;flex-direction:column;min-height:0;background:#070B16}
+    .chat-top{
+      padding:12px 16px;background:var(--panel2);
+      border-bottom:1px solid var(--line);
+      display:flex;justify-content:space-between;align-items:center;
+    }
+    .chat-top h3{font-size:15px}
+    .chat-top span{color:var(--muted);font-size:12px}
+
+    #messages{
+      flex:1;overflow:auto;padding:18px;display:flex;flex-direction:column;gap:12px;
+    }
+    .msg{
+      max-width:min(720px,92%);
+      background:#0F172A;border:1px solid var(--line);
+      border-radius:16px;padding:12px 14px;
+    }
+    .msg.me{
+      align-self:flex-end;background:#0B3A4A;border-color:#155E75;
+    }
+    .msg .meta{
+      display:flex;justify-content:space-between;gap:12px;
+      font-size:12px;color:var(--muted);margin-bottom:6px;
+    }
+    .msg .meta b{color:var(--cyan)}
+    .msg.me .meta b{color:#A5F3FC}
+    .msg .text{white-space:pre-wrap;line-height:1.45;font-size:14px}
+
+    .composer{
+      display:flex;gap:10px;padding:14px;background:var(--panel);
+      border-top:1px solid var(--line);
+    }
+    .composer input{
+      flex:1;height:48px;border-radius:14px;border:1px solid var(--line);
+      background:#0F172A;color:var(--text);padding:0 14px;font-size:14px;outline:none;
+    }
+    .composer input:focus{border-color:#155E75}
+    .composer button{
+      height:48px;min-width:120px;border:none;border-radius:14px;
+      background:var(--cyan2);color:#042F2E;font-weight:700;cursor:pointer;
+    }
+    .composer button:hover{filter:brightness(1.08)}
+    .composer button:disabled{opacity:.5;cursor:not-allowed}
+
+    /* LOGIN */
+    #login{
+      position:fixed;inset:0;background:rgba(5,8,20,.92);
+      display:flex;align-items:center;justify-content:center;z-index:20;
+    }
+    .login-card{
+      width:min(420px,92vw);background:var(--panel);
+      border:1px solid var(--line);border-radius:22px;padding:28px;
+      box-shadow:0 0 40px rgba(34,211,238,.08);
+    }
+    .login-card h2{color:var(--cyan);font-size:26px;margin-bottom:6px}
+    .login-card p{color:var(--muted);font-size:13px;margin-bottom:18px}
+    .login-card label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
+    .login-card input, .login-card select{
+      width:100%;height:44px;border-radius:12px;border:1px solid var(--line);
+      background:#0F172A;color:var(--text);padding:0 12px;font-size:14px;
+    }
+    .login-card button{
+      width:100%;height:48px;margin-top:18px;border:none;border-radius:14px;
+      background:var(--cyan2);color:#042F2E;font-weight:800;cursor:pointer;font-size:15px;
+    }
+    .erro{color:#FCA5A5;font-size:13px;margin-top:10px;min-height:18px}
+
+    .sys{
+      align-self:center;color:var(--muted);font-size:12px;
+      background:transparent;border:none;padding:4px 8px;
+    }
+
+    @media (max-width:860px){
+      main{grid-template-columns:1fr}
+      aside{display:none}
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <header>
+      <div class="brand">
+        <h1>SMN</h1>
+        <span>Sistema de Mensagens • Nova Nexus</span>
+      </div>
+      <div class="status">
+        <div id="conn" class="off">● OFFLINE</div>
+        <small id="who">Não autenticado</small>
+      </div>
+    </header>
+
+    <main>
+      <aside>
+        <div class="user-card">
+          <div>Operador: <b id="sideName">—</b></div>
+          <p id="sideCargo">Cargo: —</p>
+        </div>
+
+        <h2>CANAIS</h2>
+        <button class="channel active" data-canal="geral"># geral</button>
+        <button class="channel" data-canal="comandantes"># comandantes</button>
+        <button class="channel" data-canal="alertas"># alertas</button>
+        <button class="channel" data-canal="justica"># justiça</button>
+
+        <h2>ONLINE</h2>
+        <div id="onlineList"><p style="color:#7C8AA5;font-size:13px">Aguardando...</p></div>
+      </aside>
+
+      <section class="chat-wrap">
+        <div class="chat-top">
+          <h3 id="canalTitulo"># geral</h3>
+          <span>Mensagens em tempo real</span>
+        </div>
+        <div id="messages"></div>
+        <div class="composer">
+          <input id="msgInput" placeholder="Escreve sua mensagem..." maxlength="500" disabled />
+          <button id="btnSend" disabled>ENVIAR</button>
+        </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- LOGIN -->
+  <div id="login">
+    <div class="login-card">
+      <h2>NEXIA // SMN</h2>
+      <p>Entre com seu nome de membro da Nova Nexus.</p>
+
+      <label>Nome</label>
+      <input id="nome" placeholder="Ex: Samuel" />
+
+      <label>Cargo</label>
+      <select id="cargo">
+        <option>Supremo Comandante</option>
+        <option>Comandante de Frota</option>
+        <option>Coadjutor Geral</option>
+        <option>Comandante</option>
+        <option>Capitão</option>
+        <option>Diretor</option>
+        <option>Oficial</option>
+        <option>Tenente</option>
+        <option>Sargento</option>
+        <option>Soldado</option>
+        <option>Novato</option>
+        <option>Membro</option>
+        
+      </select>
+
+      <label>Senha do canal (mesma pra equipe por enquanto)</label>
+      <input id="senha" type="password" placeholder="senha do SMN" />
+
+      <button id="btnLogin">ENTRAR NO SMN</button>
+      <div class="erro" id="loginErro"></div>
+    </div>
+  </div>
+
+  <!-- Firebase SDKs -->
+  <script type="module">
+    // ================== CONFIG FIREBASE ==================
+    // TROCA ISSO pelos dados do SEU projeto Firebase
+    const firebaseConfig = {
+      apiKey: "AIzaSyD1YbeRE0XMD4HZn-3hulQYuHa10nXFeoQ",
+      authDomain: "nova-nexus-smn.firebaseapp.com",
+      databaseURL: "https://nova-nexus-smn-default-rtdb.firebaseio.com",
+      projectId: "nova-nexus-smn",
+      storageBucket: "nova-nexus-smn.firebasestorage.app",
+      messagingSenderId: "1067337138111",
+      appId: "G-MMYDT6YDPN"
+    };
+
+    // Senha simples compartilhada (troque!)
+    const SENHA_SMN = "nexus2026";
+
+    import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
+    import { getDatabase, ref, push, onChildAdded, set, onValue, onDisconnect, remove, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+
+    const app = initializeApp(firebaseConfig);
+    const db = getDatabase(app);
+
+    let user = null;
+    let canalAtual = "geral";
+    let unsubMsgs = null;
+
+    const el = {
+      login: document.getElementById("login"),
+      nome: document.getElementById("nome"),
+      cargo: document.getElementById("cargo"),
+      senha: document.getElementById("senha"),
+      loginErro: document.getElementById("loginErro"),
+      btnLogin: document.getElementById("btnLogin"),
+      messages: document.getElementById("messages"),
+      msgInput: document.getElementById("msgInput"),
+      btnSend: document.getElementById("btnSend"),
+      conn: document.getElementById("conn"),
+      who: document.getElementById("who"),
+      sideName: document.getElementById("sideName"),
+      sideCargo: document.getElementById("sideCargo"),
+      canalTitulo: document.getElementById("canalTitulo"),
+      onlineList: document.getElementById("onlineList"),
+    };
+
+    function setOnlineUI(on){
+      el.conn.className = on ? "on" : "off";
+      el.conn.textContent = on ? "● ONLINE" : "● OFFLINE";
+    }
+
+    function escapeHtml(str){
+      return String(str)
+        .replaceAll("&","&amp;")
+        .replaceAll("<","&lt;")
+        .replaceAll(">","&gt;")
+        .replaceAll('"',"&quot;");
+    }
+
+    function formatHora(ts){
+      try{
+        const d = typeof ts === "number" ? new Date(ts) : new Date();
+        return d.toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"});
+      }catch{
+        return "--:--";
+      }
+    }
+
+    function addMsg(m, mine=false){
+      const div = document.createElement("div");
+      div.className = "msg" + (mine ? " me" : "");
+      div.innerHTML = `
+        <div class="meta">
+          <b>${escapeHtml(m.nome || "?")} <span style="color:#7C8AA5;font-weight:500">• ${escapeHtml(m.cargo || "")}</span></b>
+          <span>${formatHora(m.createdAt)}</span>
+        </div>
+        <div class="text">${escapeHtml(m.texto || "")}</div>
+      `;
+      el.messages.appendChild(div);
+      el.messages.scrollTop = el.messages.scrollHeight;
+    }
+
+    function addSys(texto){
+      const div = document.createElement("div");
+      div.className = "sys";
+      div.textContent = texto;
+      el.messages.appendChild(div);
+      el.messages.scrollTop = el.messages.scrollHeight;
+    }
+
+    function listenCanal(canal){
+      if (unsubMsgs) { unsubMsgs(); unsubMsgs = null; }
+      el.messages.innerHTML = "";
+      addSys(`Conectado em #${canal}`);
+
+      const q = query(ref(db, `smn/canais/${canal}/msgs`), limitToLast(80));
+      const handler = onChildAdded(q, (snap) => {
+        const m = snap.val();
+        if (!m) return;
+        addMsg(m, user && m.uid === user.uid);
+      });
+      unsubMsgs = () => handler(); // onChildAdded returns unsubscribe in modular? Actually returns unsubscribe function
+      // fix: onChildAdded returns Unsubscribe
+    }
+
+    // online presence
+    function setupPresence(){
+      const uid = user.uid;
+      const myRef = ref(db, `smn/online/${uid}`);
+      set(myRef, {
+        nome: user.nome,
+        cargo: user.cargo,
+        at: Date.now()
+      });
+      onDisconnect(myRef).remove();
+
+      onValue(ref(db, "smn/online"), (snap) => {
+        const data = snap.val() || {};
+        const arr = Object.values(data).sort((a,b)=> (a.nome||"").localeCompare(b.nome||""));
+        if (!arr.length){
+          el.onlineList.innerHTML = `<p style="color:#7C8AA5;font-size:13px">Ninguém online</p>`;
+          return;
+        }
+        el.onlineList.innerHTML = arr.map(p =>
+          `<div class="member" style="cursor:default">🟢 ${escapeHtml(p.nome)} <span style="color:#7C8AA5">• ${escapeHtml(p.cargo||"")}</span></div>`
+        ).join("");
+      });
+    }
+
+    async function sendMsg(){
+      const texto = el.msgInput.value.trim();
+      if (!texto || !user) return;
+      el.msgInput.value = "";
+      await push(ref(db, `smn/canais/${canalAtual}/msgs`), {
+        uid: user.uid,
+        nome: user.nome,
+        cargo: user.cargo,
+        texto,
+        createdAt: Date.now()
+      });
+    }
+
+    function login(){
+      const nome = el.nome.value.trim();
+      const cargo = el.cargo.value;
+      const senha = el.senha.value;
+      el.loginErro.textContent = "";
+
+      if (nome.length < 2){
+        el.loginErro.textContent = "Nome inválido.";
+        return;
+      }
+      if (senha !== SENHA_SMN){
+        el.loginErro.textContent = "Senha do SMN incorreta.";
+        return;
+      }
+
+      user = {
+        uid: (nome.toLowerCase().replace(/\s+/g,"-") + "-" + Math.random().toString(36).slice(2,7)),
+        nome,
+        cargo
+      };
+
+      localStorage.setItem("smn_user", JSON.stringify({nome, cargo}));
+
+      el.login.style.display = "none";
+      el.msgInput.disabled = false;
+      el.btnSend.disabled = false;
+      el.sideName.textContent = nome;
+      el.sideCargo.textContent = "Cargo: " + cargo;
+      el.who.textContent = nome + " • " + cargo;
+      setOnlineUI(true);
+
+      setupPresence();
+      listenCanal(canalAtual);
+      el.msgInput.focus();
+    }
+
+    // canais
+    document.querySelectorAll(".channel").forEach(btn => {
+      btn.addEventListener("click", () => {
+        document.querySelectorAll(".channel").forEach(b => b.classList.remove("active"));
+        btn.classList.add("active");
+        canalAtual = btn.dataset.canal;
+        el.canalTitulo.textContent = "# " + canalAtual;
+        if (user) listenCanal(canalAtual);
+      });
+    });
+
+    el.btnLogin.addEventListener("click", login);
+    el.senha.addEventListener("keydown", e => { if(e.key==="Enter") login(); });
+    el.btnSend.addEventListener("click", sendMsg);
+    el.msgInput.addEventListener("keydown", e => { if(e.key==="Enter") sendMsg(); });
+
+    // auto prefill
+    try{
+      const saved = JSON.parse(localStorage.getItem("smn_user")||"null");
+      if (saved?.nome) el.nome.value = saved.nome;
+      if (saved?.cargo) el.cargo.value = saved.cargo;
+    }catch{}
+
+    // marca online se config ok (tentativa simples)
+    setOnlineUI(true);
+  </script>
+</body>
+</html>
