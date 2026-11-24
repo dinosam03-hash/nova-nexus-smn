@@ -347,7 +347,35 @@
     const SENHA_SMN = "nexus2026";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, set, onValue, onDisconnect, remove, serverTimestamp, query, limitToLast, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import {
+
+ getDatabase,
+
+ ref,
+
+ push,
+
+ onChildAdded,
+
+ set,
+
+ onValue,
+
+ get,
+
+ update,
+
+ onDisconnect,
+
+ remove,
+
+ query,
+
+ limitToLast
+
+}
+
+from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -403,7 +431,7 @@ document.getElementById(
       }
     }
 
-    async function reagir(msgKey, emoji){
+   async function reagir(msgKey, emoji){
 
     const reacaoRef =
 
@@ -415,31 +443,23 @@ document.getElementById(
 
     );
 
-    onValue(
+    const snap =
+
+    await get(reacaoRef);
+
+    const atual =
+
+    snap.exists()
+
+    ? snap.val()
+
+    : 0;
+
+    await set(
 
         reacaoRef,
 
-        async snap => {
-
-            const atual =
-
-            snap.val() || 0;
-
-            await set(
-
-                reacaoRef,
-
-                atual + 1
-
-            );
-
-        },
-
-        {
-
-            onlyOnce:true
-
-        }
+        atual + 1
 
     );
 
