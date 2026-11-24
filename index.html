@@ -213,6 +213,41 @@
     }
 
 }
+.reacoes{
+
+    display:flex;
+
+    gap:6px;
+
+    margin-top:8px;
+
+    flex-wrap:wrap;
+
+}
+
+.reacoes button{
+
+    background:#152033;
+
+    border:1px solid #1E293B;
+
+    color:#E5E7EB;
+
+    border-radius:10px;
+
+    padding:4px 8px;
+
+    cursor:pointer;
+
+    font-size:12px;
+
+}
+
+.reacoes button:hover{
+
+    background:#1E293B;
+
+}
   </style>
 </head>
 <body>
@@ -312,7 +347,7 @@
     const SENHA_SMN = "nexus2026";
 
     import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-    import { getDatabase, ref, push, onChildAdded, set, onValue, onDisconnect, remove, serverTimestamp, query, limitToLast } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
+    import { getDatabase, ref, push, onChildAdded, set, onValue, onDisconnect, remove, serverTimestamp, query, limitToLast, update } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js";
 
     const app = initializeApp(firebaseConfig);
     const db = getDatabase(app);
@@ -368,19 +403,126 @@ document.getElementById(
       }
     }
 
-    function addMsg(m, mine=false){
-      const div = document.createElement("div");
-      div.className = "msg" + (mine ? " me" : "");
-      div.innerHTML = `
-        <div class="meta">
-          <b>${escapeHtml(m.nome || "?")} <span style="color:#7C8AA5;font-weight:500">• ${escapeHtml(m.cargo || "")}</span></b>
-          <span>${formatHora(m.createdAt)}</span>
-        </div>
-        <div class="text">${escapeHtml(m.texto || "")}</div>
-      `;
-      el.messages.appendChild(div);
-      el.messages.scrollTop = el.messages.scrollHeight;
-    }
+    async function reagir(msgKey, emoji){
+
+    const reacaoRef =
+
+    ref(
+
+        db,
+
+        `smn/canais/${canalAtual}/msgs/${msgKey}/reacoes/${emoji}`
+
+    );
+
+    onValue(
+
+        reacaoRef,
+
+        async snap => {
+
+            const atual =
+
+            snap.val() || 0;
+
+            await set(
+
+                reacaoRef,
+
+                atual + 1
+
+            );
+
+        },
+
+        {
+
+            onlyOnce:true
+
+        }
+
+    );
+
+}
+
+    function addMsg(m, key, mine=false){
+
+ const div = document.createElement("div");
+
+ div.className = "msg" + (mine ? " me" : "");
+
+ div.innerHTML = `
+
+ <div class="meta">
+
+ <b>
+
+ ${escapeHtml(m.nome || "?")}
+
+ <span
+ style="
+ color:#7C8AA5;
+ font-weight:500
+ "
+ >
+
+ • ${escapeHtml(m.cargo || "")}
+
+ </span>
+
+ </b>
+
+ <span>
+
+ ${formatHora(m.createdAt)}
+
+ </span>
+
+ </div>
+
+ <div class="text">
+
+ ${escapeHtml(m.texto || "")}
+
+ </div>
+
+ <div class="reacoes">
+
+ <button onclick="reagir('${key}','🔥')">
+
+ 🔥 ${m.reacoes?.["🔥"] || 0}
+
+ </button>
+
+ <button onclick="reagir('${key}','🛡️')">
+
+ 🛡️ ${m.reacoes?.["🛡️"] || 0}
+
+ </button>
+
+ <button onclick="reagir('${key}','✅')">
+
+ ✅ ${m.reacoes?.["✅"] || 0}
+
+ </button>
+
+ <button onclick="reagir('${key}','💀')">
+
+ 💀 ${m.reacoes?.["💀"] || 0}
+
+ </button>
+
+ </div>
+
+ `;
+
+ el.messages.appendChild(div);
+
+ el.messages.scrollTop =
+
+ el.messages.scrollHeight;
+
+}
 
     function addSys(texto){
       const div = document.createElement("div");
@@ -399,7 +541,17 @@ document.getElementById(
       const handler = onChildAdded(q, (snap) => {
         const m = snap.val();
         if (!m) return;
-        addMsg(m, user && m.uid === user.uid);
+        addMsg(
+
+ m,
+
+ snap.key,
+
+ user &&
+
+ m.uid === user.uid
+
+);
       });
       unsubMsgs = () => handler(); // onChildAdded returns unsubscribe in modular? Actually returns unsubscribe function
       // fix: onChildAdded returns Unsubscribe
@@ -552,14 +704,21 @@ document.getElementById(
       const texto = el.msgInput.value.trim();
       if (!texto || !user) return;
       el.msgInput.value = "";
-      await push(ref(db, `smn/canais/${canalAtual}/msgs`), {
-        uid: user.uid,
-        nome: user.nome,
-        cargo: user.cargo,
-        texto,
-        createdAt: Date.now()
-      });
-    }
+await push(ref(db, `smn/canais/${canalAtual}/msgs`), {
+
+ uid: user.uid,
+
+ nome: user.nome,
+
+ cargo: user.cargo,
+
+ texto,
+
+ createdAt: Date.now(),
+
+ reacoes: {}
+
+});    }
 
     function login(){
       const nome = el.nome.value.trim();
