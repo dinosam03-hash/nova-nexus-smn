@@ -236,6 +236,8 @@
 
     let user = null;
     let canalAtual = "geral";
+    let modoDM = false;
+    let alvoDM = null;
     let unsubAdded = null, unsubChanged = null, unsubRemoved = null, unsubTyping = null;
     let typingTimeout = null;
     let unread = 0;
@@ -290,6 +292,27 @@
     function escapeHtml(str){
       return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     }
+    function gerarDMId(
+
+  usuarioA,
+
+  usuarioB
+
+){
+
+  return [
+
+    norm(usuarioA),
+
+    norm(usuarioB)
+
+  ]
+
+  .sort()
+
+  .join("_");
+
+}
     function formatHora(ts){
       try{ return new Date(typeof ts==="number"?ts:Date.now()).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}); }
       catch{ return "--:--"; }
@@ -399,17 +422,233 @@
       setupTyping(canal);
     }
 
+    function listenDM(nome){
+
+  clearListeners();
+
+  msgNodes.clear();
+
+  el.messages.innerHTML = "";
+
+  const dmId =
+
+  gerarDMId(
+
+    user.nome,
+
+    nome
+
+  );
+
+  const q = query(
+
+    ref(
+      db,
+      `smn/dm/${dmId}`
+    ),
+
+    limitToLast(80)
+
+  );
+
+  unsubAdded =
+
+  onChildAdded(
+
+    q,
+
+    snap =>
+
+    upsertMsg(
+
+      snap.val(),
+
+      snap.key,
+
+      true
+
+    )
+
+  );
+
+  unsubChanged =
+
+  onChildChanged(
+
+    q,
+
+    snap =>
+
+    upsertMsg(
+
+      snap.val(),
+
+      snap.key,
+
+      false
+
+    )
+
+  );
+
+  unsubRemoved =
+
+  onChildRemoved(
+
+    q,
+
+    snap =>
+
+    removeMsgNode(
+
+      snap.key
+
+    )
+
+  );
+
+}
+
     function setupPresence(){
-      const myRef = ref(db, `smn/online/${user.uid}`);
-      set(myRef, { nome:user.nome, cargo:user.cargo, at:Date.now() });
-      onDisconnect(myRef).remove();
-      onValue(ref(db,"smn/online"), snap=>{
-        const arr = Object.values(snap.val()||{}).sort((a,b)=>(a.nome||"").localeCompare(b.nome||""));
-        el.onlineList.innerHTML = arr.length
-          ? arr.map(p=>`<div class="member" style="cursor:default">🟢 ${escapeHtml(p.nome)} <span style="color:#7C8AA5">• ${escapeHtml(p.cargo||"")}</span></div>`).join("")
-          : `<p style="color:#7C8AA5;font-size:13px">Ninguém online</p>`;
-      });
+el.onlineList.innerHTML = arr.map(
+
+  p => `
+
+  <div
+
+    class="member"
+
+    data-user="${p.nome}"
+
+  >
+
+    🟢 ${escapeHtml(p.nome)}
+
+    <span style="color:#7C8AA5">
+
+      • ${escapeHtml(p.cargo||"")}
+
+    </span>
+
+  </div>
+
+  `
+
+).join("");
+
+  const arr =
+
+  Object.values(
+    snap.val() || {}
+  )
+
+  .sort(
+
+    (a,b)=>
+
+    (a.nome||"")
+
+    .localeCompare(
+      b.nome||""
+    )
+
+  );
+
+  if(!arr.length){
+
+    el.onlineList.innerHTML =
+
+    `<p style="color:#7C8AA5;font-size:13px">
+
+      Ninguém online
+
+    </p>`;
+
+    return;
+
+  }
+
+  el.onlineList.innerHTML =
+
+  arr.map(
+
+    p => `
+
+    <div
+
+      class="member"
+
+      data-user="${p.nome}"
+
+    >
+
+      🟢 ${escapeHtml(p.nome)}
+
+      <span style="color:#7C8AA5">
+
+      • ${escapeHtml(
+
+          p.cargo || ""
+
+      )}
+
+      </span>
+
+    </div>
+
+    `
+
+  ).join("");
+
+  el.onlineList
+
+  .querySelectorAll(
+    ".member"
+  )
+
+  .forEach(
+
+    membro => {
+
+      membro.onclick = () => {
+
+        abrirDM(
+
+          membro.dataset.user
+
+        );
+
+      };
+
     }
+
+  );
+
+};
+    
+el.onlineList
+
+.querySelectorAll(
+  ".member"
+)
+
+.forEach(
+
+  membro => {
+
+    membro.onclick = () => {
+
+      abrirDM(
+
+        membro.dataset.user
+
+      );
+
+    };
+
+  }
+
+);
 
     function setupTyping(canal){
       if (unsubTyping) unsubTyping();
@@ -430,7 +669,29 @@
     async function pushMsg(extra={}){
       if (!user) return;
       if (canalAtual==="pilares" && !user.pilar){ alert("Canal #pilares só para Pilares."); return; }
-      await push(ref(db, `smn/canais/${canalAtual}/msgs`), {
+      const caminho =
+
+modoDM
+
+?
+
+`smn/dm/${
+  gerarDMId(
+    user.nome,
+    alvoDM
+  )
+}`
+
+:
+
+`smn/canais/${canalAtual}/msgs`;
+
+await push(
+
+  ref(
+    db,
+    caminho
+  ),{
         uid:user.uid, nome:user.nome, cargo:user.cargo,
         texto: extra.texto || "",
         link: extra.link || null,
@@ -537,6 +798,72 @@
     }
     el.btnAudio.onclick = toggleAudio;
 
+function abrirDM(nome){
+
+  if(
+
+    !user ||
+
+    nome === user.nome
+
+  ) return;
+
+  modoDM = true;
+
+  alvoDM = nome;
+
+  el.canalTitulo.textContent =
+
+  "💬 " + nome;
+
+  listenDM(nome);
+
+}
+
+function gerarDMId(
+
+  usuarioA,
+
+  usuarioB
+
+){
+
+  return [
+
+    norm(usuarioA),
+
+    norm(usuarioB)
+
+  ]
+
+  .sort()
+
+  .join("_");
+
+}
+
+function abrirDM(nome){
+
+  if(
+
+    !user ||
+
+    nome === user.nome
+
+  ) return;
+
+  modoDM = true;
+
+  alvoDM = nome;
+
+  el.canalTitulo.textContent =
+
+  "💬 " + nome;
+
+  listenDM(nome);
+
+}
+
     function login(){
       const nomeDigitado = el.nome.value.trim();
       const senha = el.senha.value;
@@ -575,6 +902,10 @@
 
     document.querySelectorAll(".channel").forEach(btn => {
       btn.addEventListener("click", () => {
+        modoDM = false;
+
+        alvoDM = null;
+
         const canal = btn.dataset.canal;
         if (canal==="pilares" && user && !user.pilar){ alert("Só Pilares."); return; }
         document.querySelectorAll(".channel").forEach(b=>b.classList.remove("active"));
