@@ -491,146 +491,157 @@
 
 }
 
-    function setupPresence(){
-el.onlineList.innerHTML = arr.map(
 
-  p => `
-
-  <div
-
-    class="member"
-
-    data-user="${p.nome}"
-
-  >
-
-    🟢 ${escapeHtml(p.nome)}
-
-    <span style="color:#7C8AA5">
-
-      • ${escapeHtml(p.cargo||"")}
-
-    </span>
-
-  </div>
-
-  `
-
-).join("");
-
-  const arr =
-
-  Object.values(
-    snap.val() || {}
-  )
-
-  .sort(
-
-    (a,b)=>
-
-    (a.nome||"")
-
-    .localeCompare(
-      b.nome||""
-    )
-
-  );
-
-  if(!arr.length){
-
-    el.onlineList.innerHTML =
-
-    `<p style="color:#7C8AA5;font-size:13px">
-
-      Ninguém online
-
-    </p>`;
-
-    return;
-
-  }
-
-  el.onlineList.innerHTML =
-
-  arr.map(
-
-    p => `
-
-    <div
-
-      class="member"
-
-      data-user="${p.nome}"
-
-    >
-
-      🟢 ${escapeHtml(p.nome)}
-
-      <span style="color:#7C8AA5">
-
-      • ${escapeHtml(
-
-          p.cargo || ""
-
-      )}
-
-      </span>
-
-    </div>
-
-    `
-
-  ).join("");
-
-  el.onlineList
-
-  .querySelectorAll(
-    ".member"
-  )
-
-  .forEach(
-
-    membro => {
-
-      membro.onclick = () => {
-
-        abrirDM(
-
-          membro.dataset.user
-
-        );
-
-      };
-
-    }
-
-  );
-
-};
     
-el.onlineList
+function setupPresence(){
 
-.querySelectorAll(
-  ".member"
-)
+    const myRef =
 
-.forEach(
+    ref(
 
-  membro => {
+        db,
 
-    membro.onclick = () => {
+        `smn/online/${user.uid}`
 
-      abrirDM(
+    );
 
-        membro.dataset.user
+    set(
 
-      );
+        myRef,
 
-    };
+        {
 
-  }
+            nome:user.nome,
 
-);
+            cargo:user.cargo,
+
+            at:Date.now()
+
+        }
+
+    );
+
+    onDisconnect(
+
+        myRef
+
+    ).remove();
+
+    onValue(
+
+        ref(
+            db,
+            "smn/online"
+        ),
+
+        snap => {
+
+            const arr =
+
+            Object.values(
+
+                snap.val() || {}
+
+            )
+
+            .sort(
+
+                (a,b)=>
+
+                (a.nome||"")
+
+                .localeCompare(
+
+                    b.nome||""
+
+                )
+
+            );
+
+            if(
+
+                !arr.length
+
+            ){
+
+                el.onlineList.innerHTML =
+
+                `<p style="color:#7C8AA5;font-size:13px">
+
+                    Ninguém online
+
+                </p>`;
+
+                return;
+
+            }
+
+            el.onlineList.innerHTML =
+
+            arr.map(
+
+                p => `
+
+                <div
+
+                    class="member"
+
+                    data-user="${p.nome}"
+
+                >
+
+                    🟢 ${escapeHtml(
+
+                        p.nome
+
+                    )}
+
+                    <span
+                    style="color:#7C8AA5">
+
+                    • ${escapeHtml(
+
+                        p.cargo || ""
+
+                    )}
+
+                    </span>
+
+                </div>
+
+                `
+
+            ).join("");
+
+            el.onlineList
+
+            .querySelectorAll(
+                ".member"
+            )
+
+            .forEach(
+
+                membro => {
+
+                    membro.onclick = () => {
+
+                        abrirDM(
+
+                            membro.dataset.user
+
+                        );
+
+                    };
+
+                }
+
+            );
+
+        }
+
+    );
+
+}
 
     function setupTyping(canal){
       if (unsubTyping) unsubTyping();
