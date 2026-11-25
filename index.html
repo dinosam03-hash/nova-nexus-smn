@@ -121,6 +121,22 @@
         <button class="channel" data-canal="pilares"># pilares</button>
         <h2>ONLINE</h2>
         <div id="onlineList"><p style="color:#7C8AA5;font-size:13px">Aguardando...</p></div>
+        <h2>MENSAGENS</h2>
+
+<div id="dmList">
+
+<p
+style="
+color:#7C8AA5;
+font-size:13px
+">
+
+Nenhuma conversa
+
+</p>
+
+</div>
+
       </aside>
 
       <section class="chat-wrap">
@@ -274,6 +290,7 @@
       linkNome: document.getElementById("linkNome"),
       linkOk: document.getElementById("linkOk"),
       linkCancel: document.getElementById("linkCancel"),
+      dmList: document.getElementById("dmList"),
     };
 
     Object.keys(MEMBROS).forEach(n => {
@@ -292,7 +309,147 @@
     function escapeHtml(str){
       return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     }
+    function carregarConversas(){
 
+    onValue(
+
+        ref(
+
+            db,
+
+            `smn/conversas/${user.uid}`
+
+        ),
+
+        snap => {
+
+            const data =
+
+            snap.val() || {};
+
+            const arr =
+
+            Object.values(
+                data
+            );
+
+            if(
+
+                !arr.length
+
+            ){
+
+                el.dmList.innerHTML =
+
+                `
+
+                <p
+                style="
+                color:#7C8AA5;
+                font-size:13px
+                ">
+
+                Nenhuma conversa
+
+                </p>
+
+                `;
+
+                return;
+
+            }
+
+            el.dmList.innerHTML =
+
+            arr.map(
+
+                c => `
+
+                <div
+
+                    class="member"
+
+                    data-dm="${c.nome}"
+
+                >
+
+                    💬 ${c.nome}
+
+                </div>
+
+                `
+
+            ).join("");
+
+            el.dmList
+
+            .querySelectorAll(
+
+                "[data-dm]"
+
+            )
+
+            .forEach(
+
+                item => {
+
+                    item.onclick = () => {
+
+                        abrirDM(
+
+                            item.dataset.dm
+
+                        );
+
+                    };
+
+                }
+
+            );
+
+        }
+
+    );
+
+}
+
+async function salvarConversaDM(nomeDestino){
+
+    if(
+
+        !user ||
+
+        !nomeDestino
+
+    ) return;
+
+    const minhaRef =
+
+    ref(
+
+        db,
+
+        `smn/conversas/${user.uid}/${norm(nomeDestino)}`
+
+    );
+
+    await set(
+
+        minhaRef,
+
+        {
+
+            nome:nomeDestino,
+
+            ultimaMensagem:
+
+            Date.now()
+
+        }
+
+    );
+
+}
 
 
     function formatHora(ts){
@@ -816,28 +973,33 @@ await push(
     }
     el.btnAudio.onclick = toggleAudio;
 
-function abrirDM(nome){
+async function abrirDM(nome){
 
-  if(
+    if(
 
-    !user ||
+        !user ||
 
-    nome === user.nome
+        nome === user.nome
 
-  ) return;
+    ) return;
 
-  modoDM = true;
+    modoDM = true;
 
-  alvoDM = nome;
+    alvoDM = nome;
 
-  el.canalTitulo.textContent =
+    await salvarConversaDM(
 
-  "💬 " + nome;
+        nome
 
-  listenDM(nome);
+    );
+
+    el.canalTitulo.textContent =
+
+    "💬 " + nome;
+
+    listenDM(nome);
 
 }
-
 function gerarDMId(
 
   usuarioA,
@@ -894,6 +1056,7 @@ function gerarDMId(
       el.who.textContent = user.nome + " • " + user.cargo;
       setOnlineUI(true);
       setupPresence();
+      carregarConversas();
       listenCanal(canalAtual);
       el.msgInput.focus();
     }
