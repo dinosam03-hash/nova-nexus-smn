@@ -199,7 +199,7 @@ Nenhuma conversa
     const MEMBROS = {
       "samuel": { cargo: "Supremo Comandante", senha: "k9p2xm", pilar: true },
       "leonardo": { cargo: "Comandante de Frota", senha: "q7m4vz", pilar: true },
-      "talles": { cargo: "Coadjutor Geral", senha: "r35utj", pilar: true },
+      "talles": { cargo: "Coadjutor Geral", senha: "r3nutj", pilar: true },
       "maria clara": { cargo: "Comandante", senha: "h6t1kc" },
       "Gael": { cargo: "Comandante", senha: "f5j7nd" },
       "juan": { cargo: "Comandante", senha: "m8c3ys" },
@@ -237,7 +237,7 @@ Nenhuma conversa
     };
 
     const EXPULSOS = new Set(["maria canto"]);
-    const EMOJIS = ["🔥", "🛡️", "✅", "💀", "😱", "🥵", "🤑", "🤐", "😂", "😎", "💲", "❌", "💎", "🔒", "🔓" ];
+    const EMOJIS = ["🔥", "🛡️", "✅", "💀"];
     const MAX_IMG_KB = 350;
     const MAX_AUDIO_SEC = 20;
 
@@ -496,13 +496,60 @@ async function salvarConversaDM(nomeDestino){
         <div class="reacoes">${renderReacoes(m,key)}</div>`;
     }
 
-    function bindMsgButtons(div, m, key){
-      div.querySelectorAll("[data-react]").forEach(btn=>{
-        btn.onclick = () => reagir(key, btn.getAttribute("data-react"));
-      });
-      const del = div.querySelector("[data-del]");
-      if (del) del.onclick = () => apagarMsg(key);
+   function bindMsgButtons(div, m, key){
+
+  console.log(
+    "BINDANDO",
+    key
+  );
+
+  div.querySelectorAll("[data-react]").forEach(
+
+    btn => {
+
+      btn.onclick = () => {
+
+        console.log(
+          "REAÇÃO",
+          key,
+          btn.getAttribute("data-react")
+        );
+
+        reagir(
+          key,
+          btn.getAttribute(
+            "data-react"
+          )
+        );
+
+      };
+
     }
+
+  );
+
+  const del =
+
+  div.querySelector(
+    "[data-del]"
+  );
+
+  if(del){
+
+    del.onclick = () => {
+
+      console.log(
+        "APAGAR",
+        key
+      );
+
+      apagarMsg(key);
+
+    };
+
+  }
+
+}
 
     function upsertMsg(m, key, isNew){
       if (!m) return;
