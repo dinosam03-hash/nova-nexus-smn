@@ -511,15 +511,22 @@ function setupPresence(){
 
         {
 
-            nome:user.nome,
+            nome: user.nome,
 
-            cargo:user.cargo,
+            cargo: user.cargo,
 
-            at:Date.now()
+            at: Date.now()
 
         }
 
     );
+    console.log(
+
+    "ONLINE SALVO",
+
+    user.nome
+
+);
 
     onDisconnect(
 
@@ -530,17 +537,24 @@ function setupPresence(){
     onValue(
 
         ref(
+
             db,
+
             "smn/online"
+
         ),
 
         snap => {
+
+            const data =
+
+            snap.val() || {};
 
             const arr =
 
             Object.values(
 
-                snap.val() || {}
+                data
 
             )
 
@@ -548,11 +562,11 @@ function setupPresence(){
 
                 (a,b)=>
 
-                (a.nome||"")
+                (a.nome || "")
 
                 .localeCompare(
 
-                    b.nome||""
+                    b.nome || ""
 
                 )
 
@@ -566,11 +580,19 @@ function setupPresence(){
 
                 el.onlineList.innerHTML =
 
-                `<p style="color:#7C8AA5;font-size:13px">
+                `
 
-                    Ninguém online
+                <p
+                style="
+                color:#7C8AA5;
+                font-size:13px
+                ">
 
-                </p>`;
+                Ninguém online
+
+                </p>
+
+                `;
 
                 return;
 
@@ -597,7 +619,9 @@ function setupPresence(){
                     )}
 
                     <span
-                    style="color:#7C8AA5">
+                    style="
+                    color:#7C8AA5
+                    ">
 
                     • ${escapeHtml(
 
@@ -616,7 +640,9 @@ function setupPresence(){
             el.onlineList
 
             .querySelectorAll(
+
                 ".member"
+
             )
 
             .forEach(
@@ -642,7 +668,6 @@ function setupPresence(){
     );
 
 }
-
     function setupTyping(canal){
       if (unsubTyping) unsubTyping();
       const typingRef = ref(db, `smn/typing/${canal}/${user.uid}`);
