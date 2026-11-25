@@ -292,27 +292,9 @@
     function escapeHtml(str){
       return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
     }
-    function gerarDMId(
 
-  usuarioA,
 
-  usuarioB
 
-){
-
-  return [
-
-    norm(usuarioA),
-
-    norm(usuarioB)
-
-  ]
-
-  .sort()
-
-  .join("_");
-
-}
     function formatHora(ts){
       try{ return new Date(typeof ts==="number"?ts:Date.now()).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}); }
       catch{ return "--:--"; }
@@ -842,27 +824,7 @@ function gerarDMId(
 
 }
 
-function abrirDM(nome){
 
-  if(
-
-    !user ||
-
-    nome === user.nome
-
-  ) return;
-
-  modoDM = true;
-
-  alvoDM = nome;
-
-  el.canalTitulo.textContent =
-
-  "💬 " + nome;
-
-  listenDM(nome);
-
-}
 
     function login(){
       const nomeDigitado = el.nome.value.trim();
