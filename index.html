@@ -27,8 +27,8 @@
     .user-card b{color:var(--cyan)}
     .user-card p{color:var(--muted);font-size:12px;margin-top:4px}
     .channel,.member{width:100%;text-align:left;background:#152033;color:var(--text);border:none;border-radius:12px;padding:10px 12px;margin:4px 0;cursor:pointer;font-size:14px}
-    .channel:hover{background:#1E293B}
-    .channel.active{background:#0E4A5A;color:var(--cyan);border:1px solid #155E75}
+    .channel:hover,.member:hover{background:#1E293B}
+    .channel.active,.member.active{background:#0E4A5A;color:var(--cyan);border:1px solid #155E75}
     .chat-wrap{display:flex;flex-direction:column;min-height:0;background:#070B16}
     .chat-top{padding:12px 16px;background:var(--panel2);border-bottom:1px solid var(--line);display:flex;justify-content:space-between;align-items:center}
     .chat-top h3{font-size:15px}
@@ -80,9 +80,7 @@
     .login-card button{width:100%;height:48px;margin-top:18px;border:none;border-radius:14px;background:var(--cyan2);color:#042F2E;font-weight:800;cursor:pointer;font-size:15px}
     .erro{color:#FCA5A5;font-size:13px;margin-top:10px;min-height:18px}
     .sys{align-self:center;color:var(--muted);font-size:12px;padding:4px 8px}
-    .modal{
-      position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:30
-    }
+    .modal{position:fixed;inset:0;background:rgba(0,0,0,.65);display:none;align-items:center;justify-content:center;z-index:30}
     .modal.open{display:flex}
     .modal-card{width:min(420px,92vw);background:var(--panel);border:1px solid var(--line);border-radius:18px;padding:20px}
     .modal-card h3{color:var(--cyan);margin-bottom:10px}
@@ -122,27 +120,13 @@
         <h2>ONLINE</h2>
         <div id="onlineList"><p style="color:#7C8AA5;font-size:13px">Aguardando...</p></div>
         <h2>MENSAGENS</h2>
-
-<div id="dmList">
-
-<p
-style="
-color:#7C8AA5;
-font-size:13px
-">
-
-Nenhuma conversa
-
-</p>
-
-</div>
-
+        <div id="dmList"><p style="color:#7C8AA5;font-size:13px">Nenhuma conversa</p></div>
       </aside>
 
       <section class="chat-wrap">
         <div class="chat-top">
           <h3 id="canalTitulo"># geral</h3>
-          <span>Mensagens em tempo real</span>
+          <span id="modoLabel">Mensagens em tempo real</span>
         </div>
         <div id="messages"></div>
         <div id="typingIndicator"></div>
@@ -197,44 +181,47 @@ Nenhuma conversa
     };
 
     const MEMBROS = {
-      "samuel": { cargo: "Supremo Comandante", senha: "k9p2xm", pilar: true },
-      "leonardo": { cargo: "Comandante de Frota", senha: "q7m4vz", pilar: true },
-      "talles": { cargo: "Coadjutor Geral", senha: "r3nutj", pilar: true },
-      "maria clara": { cargo: "Comandante", senha: "h6t1kc" },
-      "Gael": { cargo: "Comandante", senha: "f5j7nd" },
-      "juan": { cargo: "Comandante", senha: "m8c3ys" },
-      "lucas": { cargo: "Comandante", senha: "p4w6tr" },
-      "noah": { cargo: "Comandante", senha: "z1a9ue" },
-      "gabriel coutinho": { cargo: "Comandante", senha: "d7k2hs" },
-      "rafael": { cargo: "Comandante", senha: "v5n8qm" },
-      "ana leticia": { cargo: "Capitão", senha: "g3y6pb" },
-      "ana letícia": { cargo: "Capitão", senha: "g3y6pb" },
-      "luana": { cargo: "Capitão", senha: "c9r4wx" },
-      "gabriela": { cargo: "Capitão", senha: "t2m7kf" },
-      "lais": { cargo: "Capitão", senha: "n6h1jq" },
-      "laís": { cargo: "Capitão", senha: "n6h1jq" },
-      "theo": { cargo: "Diretor", senha: "w8s3ld" },
-      "théo": { cargo: "Diretor", senha: "w8s3ld" },
-      "manuella": { cargo: "Diretor", senha: "a4p9ve" },
-      "davi": { cargo: "Diretor", senha: "y7c2nm" },
-      "gael": { cargo: "Capitão", senha: "s5k8xr" },
-      "esmael": { cargo: "Diretor", senha: "j1f6qt" },
-      "pietra": { cargo: "Capitão", senha: "u3b7hw" },
-      "vitoria": { cargo: "Capitão", senha: "e9m4zc" },
-      "vitória": { cargo: "Capitão", senha: "e9m4zc" },
-      "enri": { cargo: "Diretor", senha: "l2q5ky" },
-      "lorena gomes": { cargo: "Capitão", senha: "x6t8pr" },
-      "maria eduarda": { cargo: "Capitão", senha: "o4n1gs" },
-      "maria alicia": { cargo: "Diretor", senha: "i8w3df" },
-      "maria alícia": { cargo: "Diretor", senha: "i8w3df" },
-      "lorenzo ricardo": { cargo: "Capitão", senha: "h5v9ma" },
-      "luiz": { cargo: "Diretor", senha: "r7c2pk" },
-      "mateo": { cargo: "Diretor", senha: "q9j4tn" },
-      "caio": { cargo: "Diretor", senha: "z3l6wb" },
-      "ezequiel": { cargo: "Diretor", senha: "m1s8ye" },
-      "rebecca": { cargo: "Diretor", senha: "k4d7ux" },
-      "laura": { cargo: "Diretor", senha: "p6h2nf" }
-    };
+  "samuel": { cargo: "Supremo Comandante", senha: "k9p2xm", pilar: true },
+  "leonardo": { cargo: "Comandante de Frota", senha: "q7m4vz", pilar: true },
+  "talles": { cargo: "Coadjutor Geral", senha: "r3nutj", pilar: true },
+
+  "maria clara": { cargo: "Comandante", senha: "h6t1kc" },
+  "gael": { cargo: "Comandante", senha: "f5j7nd" },
+  "juan": { cargo: "Comandante", senha: "m8c3ys" },
+  "lucas": { cargo: "Comandante", senha: "p4w6tr" },
+  "noah": { cargo: "Comandante", senha: "z1a9ue" },
+  "gabriel coutinho": { cargo: "Comandante", senha: "d7k2hs" },
+  "rafael": { cargo: "Comandante", senha: "v5n8qm" },
+  "felipe": { cargo: "Comandante", senha: "w4k9pz" },
+  "davi": { cargo: "Comandante", senha: "y7c2nm" },
+
+  "ana leticia": { cargo: "Capitão", senha: "g3y6pb" },
+  "ana letícia": { cargo: "Capitão", senha: "g3y6pb" },
+  "luana": { cargo: "Capitão", senha: "c9r4wx" },
+  "gabriela": { cargo: "Capitão", senha: "t2m7kf" },
+  "lais": { cargo: "Capitão", senha: "n6h1jq" },
+  "laís": { cargo: "Capitão", senha: "n6h1jq" },
+  "pietra": { cargo: "Capitão", senha: "u3b7hw" },
+  "vitoria": { cargo: "Capitão", senha: "e9m4zc" },
+  "vitória": { cargo: "Capitão", senha: "e9m4zc" },
+  "lorena gomes": { cargo: "Capitão", senha: "x6t8pr" },
+  "maria eduarda": { cargo: "Capitão", senha: "o4n1gs" },
+  "lorenzo ricardo": { cargo: "Capitão", senha: "h5v9ma" },
+
+  "theo": { cargo: "Diretor", senha: "w8s3ld" },
+  "théo": { cargo: "Diretor", senha: "w8s3ld" },
+  "manuella": { cargo: "Diretor", senha: "a4p9ve" },
+  "esmael": { cargo: "Diretor", senha: "j1f6qt" },
+  "enri": { cargo: "Diretor", senha: "l2q5ky" },
+  "maria alicia": { cargo: "Diretor", senha: "i8w3df" },
+  "maria alícia": { cargo: "Diretor", senha: "i8w3df" },
+  "luiz": { cargo: "Diretor", senha: "r7c2pk" },
+  "mateo": { cargo: "Diretor", senha: "q9j4tn" },
+  "caio": { cargo: "Diretor", senha: "z3l6wb" },
+  "ezequiel": { cargo: "Diretor", senha: "m1s8ye" },
+  "rebecca": { cargo: "Diretor", senha: "k4d7ux" },
+  "laura": { cargo: "Diretor", senha: "p6h2nf" }
+};
 
     const EXPULSOS = new Set(["maria canto"]);
     const EMOJIS = ["🔥", "🛡️", "✅", "💀"];
@@ -261,7 +248,6 @@ Nenhuma conversa
     let audioChunks = [];
     let gravando = false;
     const msgNodes = new Map();
-
     const audioMsg = new Audio("https://actions.google.com/sounds/v1/cartoon/cartoon_boing.ogg");
 
     const el = {
@@ -282,6 +268,7 @@ Nenhuma conversa
       sideName: document.getElementById("sideName"),
       sideCargo: document.getElementById("sideCargo"),
       canalTitulo: document.getElementById("canalTitulo"),
+      modoLabel: document.getElementById("modoLabel"),
       onlineList: document.getElementById("onlineList"),
       typingIndicator: document.getElementById("typingIndicator"),
       listaMembros: document.getElementById("listaMembros"),
@@ -300,257 +287,89 @@ Nenhuma conversa
     });
 
     function norm(s){
-      return String(s||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").trim().replace(/\s+/g," ");
+      return String(s || "")
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim()
+        .replace(/\s+/g, " ");
+    }
+    function uidFromName(nome){
+      return norm(nome).replace(/\s+/g, "-");
     }
     function setOnlineUI(on){
       el.conn.className = on ? "on" : "off";
       el.conn.textContent = on ? "● ONLINE" : "● OFFLINE";
     }
     function escapeHtml(str){
-      return String(str).replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;").replaceAll('"',"&quot;");
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;");
     }
-    function carregarConversas(){
-
-    onValue(
-
-        ref(
-
-            db,
-
-            `smn/conversas/${user.uid}`
-
-        ),
-
-        snap => {
-
-            const data =
-
-            snap.val() || {};
-
-            const arr =
-
-            Object.values(
-                data
-            );
-
-            if(
-
-                !arr.length
-
-            ){
-
-                el.dmList.innerHTML =
-
-                `
-
-                <p
-                style="
-                color:#7C8AA5;
-                font-size:13px
-                ">
-
-                Nenhuma conversa
-
-                </p>
-
-                `;
-
-                return;
-
-            }
-
-            el.dmList.innerHTML =
-
-            arr.map(
-
-                c => `
-
-                <div
-
-                    class="member"
-
-                    data-dm="${c.nome}"
-
-                >
-
-                    💬 ${c.nome}
-
-                </div>
-
-                `
-
-            ).join("");
-
-            el.dmList
-
-            .querySelectorAll(
-
-                "[data-dm]"
-
-            )
-
-            .forEach(
-
-                item => {
-
-                    item.onclick = () => {
-
-                        abrirDM(
-
-                            item.dataset.dm
-
-                        );
-
-                    };
-
-                }
-
-            );
-
-        }
-
-    );
-
-}
-
-async function salvarConversaDM(nomeDestino){
-
-    if(
-
-        !user ||
-
-        !nomeDestino
-
-    ) return;
-
-    const minhaRef =
-
-    ref(
-
-        db,
-
-        `smn/conversas/${user.uid}/${norm(nomeDestino)}`
-
-    );
-
-    await set(
-
-        minhaRef,
-
-        {
-
-            nome:nomeDestino,
-
-            ultimaMensagem:
-
-            Date.now()
-
-        }
-
-    );
-
-}
-
-
     function formatHora(ts){
-      try{ return new Date(typeof ts==="number"?ts:Date.now()).toLocaleTimeString("pt-BR",{hour:"2-digit",minute:"2-digit"}); }
-      catch{ return "--:--"; }
+      try {
+        return new Date(typeof ts === "number" ? ts : Date.now())
+          .toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
+      } catch { return "--:--"; }
     }
     function playMsgSound(){
-      try{ audioMsg.currentTime=0; audioMsg.volume=0.3; audioMsg.play().catch(()=>{}); }catch{}
+      try { audioMsg.currentTime = 0; audioMsg.volume = 0.3; audioMsg.play().catch(()=>{}); } catch {}
     }
     function setTitleBadge(){
-      document.title = unread>0 ? `(${unread}) SMN — Nova Nexus` : "SMN — Sistema de Mensagens Nova Nexus";
+      document.title = unread > 0 ? `(${unread}) SMN — Nova Nexus` : "SMN — Sistema de Mensagens Nova Nexus";
     }
-    window.addEventListener("focus", ()=>{ unread=0; setTitleBadge(); });
-    document.addEventListener("visibilitychange", ()=>{ if(!document.hidden){ unread=0; setTitleBadge(); }});
+    window.addEventListener("focus", () => { unread = 0; setTitleBadge(); });
+    document.addEventListener("visibilitychange", () => { if (!document.hidden) { unread = 0; setTitleBadge(); } });
 
-    function podeApagar(m){ return !!(user && m && (m.uid===user.uid || user.pilar)); }
+    function gerarDMId(a, b){
+      return [norm(a), norm(b)].sort().join("_");
+    }
+    function caminhoMsgs(){
+      if (modoDM && alvoDM) return `smn/dm/${gerarDMId(user.nome, alvoDM)}`;
+      return `smn/canais/${canalAtual}/msgs`;
+    }
+    function caminhoTyping(){
+      if (modoDM && alvoDM) return `smn/typing/dm_${gerarDMId(user.nome, alvoDM)}`;
+      return `smn/typing/${canalAtual}`;
+    }
 
+    function podeApagar(m){
+      return !!(user && m && (m.uid === user.uid || user.pilar));
+    }
     function renderReacoes(m, key){
       const reacoes = m.reacoes || {};
-      let html = EMOJIS.map(e => `<button data-react="${e}" data-key="${escapeHtml(key)}">${e} ${reacoes[e]||0}</button>`).join("");
+      let html = EMOJIS.map(e =>
+        `<button data-react="${e}" data-key="${escapeHtml(key)}">${e} ${reacoes[e] || 0}</button>`
+      ).join("");
       if (podeApagar(m)) html += `<button class="btn-del" data-del="${escapeHtml(key)}">apagar</button>`;
       return html;
     }
-
     function buildMsgHtml(m, key){
       let corpo = "";
       if (m.texto) corpo += `<div class="text">${escapeHtml(m.texto)}</div>`;
-      if (m.link && m.link.url) {
-        corpo += `<div class="arquivo"><span>🔗</span><a href="${escapeHtml(m.link.url)}" target="_blank" rel="noopener">${escapeHtml(m.link.nome||m.link.url)}</a></div>`;
+      if (m.link?.url) {
+        corpo += `<div class="arquivo"><span>🔗</span><a href="${escapeHtml(m.link.url)}" target="_blank" rel="noopener">${escapeHtml(m.link.nome || m.link.url)}</a></div>`;
       }
-      if (m.imagem) {
-        corpo += `<img class="preview" src="${m.imagem}" alt="imagem" />`;
-      }
-      if (m.audio) {
-        corpo += `<div class="audio-box"><span>🎙️</span><audio controls src="${m.audio}"></audio></div>`;
-      }
+      if (m.imagem) corpo += `<img class="preview" src="${m.imagem}" alt="imagem" />`;
+      if (m.audio) corpo += `<div class="audio-box"><span>🎙️</span><audio controls src="${m.audio}"></audio></div>`;
       if (!corpo) corpo = `<div class="text" style="color:#7C8AA5">(vazio)</div>`;
       return `
         <div class="meta">
-          <b>${escapeHtml(m.nome||"?")} <span style="color:#7C8AA5;font-weight:500">• ${escapeHtml(m.cargo||"")}</span></b>
+          <b>${escapeHtml(m.nome || "?")} <span style="color:#7C8AA5;font-weight:500">• ${escapeHtml(m.cargo || "")}</span></b>
           <span>${formatHora(m.createdAt)}</span>
         </div>
         ${corpo}
-        <div class="reacoes">${renderReacoes(m,key)}</div>`;
+        <div class="reacoes">${renderReacoes(m, key)}</div>`;
     }
-
-   function bindMsgButtons(div, m, key){
-
-  console.log(
-    "BINDANDO",
-    key
-  );
-
-  div.querySelectorAll("[data-react]").forEach(
-
-    btn => {
-
-      btn.onclick = () => {
-
-        console.log(
-          "REAÇÃO",
-          key,
-          btn.getAttribute("data-react")
-        );
-
-        reagir(
-          key,
-          btn.getAttribute(
-            "data-react"
-          )
-        );
-
-      };
-
+    function bindMsgButtons(div, key){
+      div.querySelectorAll("[data-react]").forEach(btn => {
+        btn.onclick = () => reagir(key, btn.getAttribute("data-react"));
+      });
+      const del = div.querySelector("[data-del]");
+      if (del) del.onclick = () => apagarMsg(key);
     }
-
-  );
-
-  const del =
-
-  div.querySelector(
-    "[data-del]"
-  );
-
-  if(del){
-
-    del.onclick = () => {
-
-      console.log(
-        "APAGAR",
-        key
-      );
-
-      apagarMsg(key);
-
-    };
-
-  }
-
-}
-
     function upsertMsg(m, key, isNew){
       if (!m) return;
       const mine = !!(user && m.uid === user.uid);
@@ -567,354 +386,153 @@ async function salvarConversaDM(nomeDestino){
         div.className = "msg" + (mine ? " me" : "");
       }
       div.innerHTML = buildMsgHtml(m, key);
-      bindMsgButtons(div, m, key);
+      bindMsgButtons(div, key);
       el.messages.scrollTop = el.messages.scrollHeight;
     }
-
     function removeMsgNode(key){
       const div = msgNodes.get(key);
-      if (div){ div.remove(); msgNodes.delete(key); }
+      if (div) { div.remove(); msgNodes.delete(key); }
     }
-
     function addSys(t){
-      const d=document.createElement("div"); d.className="sys"; d.textContent=t;
-      el.messages.appendChild(d); el.messages.scrollTop=el.messages.scrollHeight;
+      const d = document.createElement("div");
+      d.className = "sys";
+      d.textContent = t;
+      el.messages.appendChild(d);
+      el.messages.scrollTop = el.messages.scrollHeight;
     }
 
     async function reagir(msgKey, emoji){
       if (!user) return;
-      const r = ref(db, `smn/canais/${canalAtual}/msgs/${msgKey}/reacoes/${emoji}`);
+      const r = ref(db, `${caminhoMsgs()}/${msgKey}/reacoes/${emoji}`);
       const snap = await get(r);
-      await set(r, (snap.exists()?Number(snap.val())||0:0)+1);
+      await set(r, (snap.exists() ? Number(snap.val()) || 0 : 0) + 1);
     }
     async function apagarMsg(msgKey){
       if (!user || !confirm("Apagar esta mensagem?")) return;
-      await remove(ref(db, `smn/canais/${canalAtual}/msgs/${msgKey}`));
+      await remove(ref(db, `${caminhoMsgs()}/${msgKey}`));
     }
 
     function clearListeners(){
-      if(unsubAdded) unsubAdded(); if(unsubChanged) unsubChanged();
-      if(unsubRemoved) unsubRemoved(); if(unsubTyping) unsubTyping();
-      unsubAdded=unsubChanged=unsubRemoved=unsubTyping=null;
+      if (unsubAdded) unsubAdded();
+      if (unsubChanged) unsubChanged();
+      if (unsubRemoved) unsubRemoved();
+      if (unsubTyping) unsubTyping();
+      unsubAdded = unsubChanged = unsubRemoved = unsubTyping = null;
     }
 
     function listenCanal(canal){
-      clearListeners(); msgNodes.clear(); el.messages.innerHTML=""; el.typingIndicator.innerHTML="";
+      clearListeners();
+      msgNodes.clear();
+      el.messages.innerHTML = "";
+      el.typingIndicator.innerHTML = "";
       addSys(`Conectado em #${canal}`);
       const q = query(ref(db, `smn/canais/${canal}/msgs`), limitToLast(80));
       unsubAdded = onChildAdded(q, snap => upsertMsg(snap.val(), snap.key, true));
       unsubChanged = onChildChanged(q, snap => upsertMsg(snap.val(), snap.key, false));
       unsubRemoved = onChildRemoved(q, snap => removeMsgNode(snap.key));
-      setupTyping(canal);
+      setupTyping();
     }
 
     function listenDM(nome){
-
-  clearListeners();
-
-  msgNodes.clear();
-
-  el.messages.innerHTML = "";
-
-  const dmId =
-
-  gerarDMId(
-
-    user.nome,
-
-    nome
-
-  );
-
-  const q = query(
-
-    ref(
-      db,
-      `smn/dm/${dmId}`
-    ),
-
-    limitToLast(80)
-
-  );
-
-  unsubAdded =
-
-  onChildAdded(
-
-    q,
-
-    snap =>
-
-    upsertMsg(
-
-      snap.val(),
-
-      snap.key,
-
-      true
-
-    )
-
-  );
-
-  unsubChanged =
-
-  onChildChanged(
-
-    q,
-
-    snap =>
-
-    upsertMsg(
-
-      snap.val(),
-
-      snap.key,
-
-      false
-
-    )
-
-  );
-
-  unsubRemoved =
-
-  onChildRemoved(
-
-    q,
-
-    snap =>
-
-    removeMsgNode(
-
-      snap.key
-
-    )
-
-  );
-
-}
-
-
-    
-function setupPresence(){
-
-    const myRef =
-
-    ref(
-
-        db,
-
-        `smn/online/${user.uid}`
-
-    );
-
-    set(
-
-        myRef,
-
-        {
-
-            nome: user.nome,
-
-            cargo: user.cargo,
-
-            at: Date.now()
-
-        }
-
-    );
-    console.log(
-
-    "ONLINE SALVO",
-
-    user.nome
-
-);
-
-    onDisconnect(
-
-        myRef
-
-    ).remove();
-
-    onValue(
-
-        ref(
-
-            db,
-
-            "smn/online"
-
-        ),
-
-        snap => {
-
-            const data =
-
-            snap.val() || {};
-
-            const arr =
-
-            Object.values(
-
-                data
-
-            )
-
-            .sort(
-
-                (a,b)=>
-
-                (a.nome || "")
-
-                .localeCompare(
-
-                    b.nome || ""
-
-                )
-
-            );
-
-            if(
-
-                !arr.length
-
-            ){
-
-                el.onlineList.innerHTML =
-
-                `
-
-                <p
-                style="
-                color:#7C8AA5;
-                font-size:13px
-                ">
-
-                Ninguém online
-
-                </p>
-
-                `;
-
-                return;
-
-            }
-
-            el.onlineList.innerHTML =
-
-            arr.map(
-
-                p => `
-
-                <div
-
-                    class="member"
-
-                    data-user="${p.nome}"
-
-                >
-
-                    🟢 ${escapeHtml(
-
-                        p.nome
-
-                    )}
-
-                    <span
-                    style="
-                    color:#7C8AA5
-                    ">
-
-                    • ${escapeHtml(
-
-                        p.cargo || ""
-
-                    )}
-
-                    </span>
-
-                </div>
-
-                `
-
-            ).join("");
-
-            el.onlineList
-
-            .querySelectorAll(
-
-                ".member"
-
-            )
-
-            .forEach(
-
-                membro => {
-
-                    membro.onclick = () => {
-
-                        abrirDM(
-
-                            membro.dataset.user
-
-                        );
-
-                    };
-
-                }
-
-            );
-
-        }
-
-    );
-
-}
-    function setupTyping(canal){
+      clearListeners();
+      msgNodes.clear();
+      el.messages.innerHTML = "";
+      el.typingIndicator.innerHTML = "";
+      addSys(`Conversa privada com ${nome}`);
+      const dmId = gerarDMId(user.nome, nome);
+      const q = query(ref(db, `smn/dm/${dmId}`), limitToLast(80));
+      unsubAdded = onChildAdded(q, snap => upsertMsg(snap.val(), snap.key, true));
+      unsubChanged = onChildChanged(q, snap => upsertMsg(snap.val(), snap.key, false));
+      unsubRemoved = onChildRemoved(q, snap => removeMsgNode(snap.key));
+      setupTyping();
+    }
+
+    function setupTyping(){
       if (unsubTyping) unsubTyping();
-      const typingRef = ref(db, `smn/typing/${canal}/${user.uid}`);
+      const base = caminhoTyping();
+      const typingRef = ref(db, `${base}/${user.uid}`);
       el.msgInput.oninput = () => {
-        set(typingRef, { nome:user.nome, at:Date.now() });
+        set(typingRef, { nome: user.nome, at: Date.now() });
         clearTimeout(typingTimeout);
-        typingTimeout = setTimeout(()=>remove(typingRef), 1800);
+        typingTimeout = setTimeout(() => remove(typingRef), 1800);
       };
-      unsubTyping = onValue(ref(db, `smn/typing/${canal}`), snap=>{
-        const outros = Object.values(snap.val()||{}).filter(p=>p && p.nome!==user.nome);
-        if(!outros.length){ el.typingIndicator.innerHTML=""; return; }
-        el.typingIndicator.innerHTML = `<div class="typing-dots"><span></span><span></span><span></span></div>
-          <span>${escapeHtml(outros.map(o=>o.nome).slice(0,3).join(", "))} ${outros.length>1?"estão":"está"} digitando...</span>`;
+      unsubTyping = onValue(ref(db, base), snap => {
+        const outros = Object.values(snap.val() || {}).filter(p => p && p.nome !== user.nome);
+        if (!outros.length) { el.typingIndicator.innerHTML = ""; return; }
+        el.typingIndicator.innerHTML = `
+          <div class="typing-dots"><span></span><span></span><span></span></div>
+          <span>${escapeHtml(outros.map(o => o.nome).slice(0, 3).join(", "))} ${outros.length > 1 ? "estão" : "está"} digitando...</span>`;
       });
     }
 
-    async function pushMsg(extra={}){
+    function carregarConversas(){
+      onValue(ref(db, `smn/conversas/${user.uid}`), snap => {
+        const data = snap.val() || {};
+        const arr = Object.values(data).sort((a, b) => (b.ultimaMensagem || 0) - (a.ultimaMensagem || 0));
+        if (!arr.length) {
+          el.dmList.innerHTML = `<p style="color:#7C8AA5;font-size:13px">Nenhuma conversa</p>`;
+          return;
+        }
+        el.dmList.innerHTML = arr.map(c => `
+          <div class="member ${modoDM && norm(alvoDM) === norm(c.nome) ? "active" : ""}" data-dm="${escapeHtml(c.nome)}">
+            💬 ${escapeHtml(c.nome)}
+          </div>`).join("");
+        el.dmList.querySelectorAll("[data-dm]").forEach(item => {
+          item.onclick = () => abrirDM(item.dataset.dm);
+        });
+      });
+    }
+
+    async function salvarConversaDM(nomeDestino){
+      if (!user || !nomeDestino) return;
+      const agora = Date.now();
+      // salva nos dois lados
+      await set(ref(db, `smn/conversas/${user.uid}/${norm(nomeDestino)}`), {
+        nome: nomeDestino,
+        ultimaMensagem: agora
+      });
+      const uidOutro = uidFromName(nomeDestino);
+      await set(ref(db, `smn/conversas/${uidOutro}/${norm(user.nome)}`), {
+        nome: user.nome,
+        ultimaMensagem: agora
+      });
+    }
+
+    function setupPresence(){
+      const myRef = ref(db, `smn/online/${user.uid}`);
+      set(myRef, { nome: user.nome, cargo: user.cargo, at: Date.now() });
+      onDisconnect(myRef).remove();
+
+      onValue(ref(db, "smn/online"), snap => {
+        const arr = Object.values(snap.val() || {})
+          .sort((a, b) => (a.nome || "").localeCompare(b.nome || ""));
+        if (!arr.length) {
+          el.onlineList.innerHTML = `<p style="color:#7C8AA5;font-size:13px">Ninguém online</p>`;
+          return;
+        }
+        el.onlineList.innerHTML = arr.map(p => `
+          <div class="member" data-user="${escapeHtml(p.nome)}">
+            🟢 ${escapeHtml(p.nome)}
+            <span style="color:#7C8AA5"> • ${escapeHtml(p.cargo || "")}</span>
+          </div>`).join("");
+        el.onlineList.querySelectorAll(".member").forEach(m => {
+          m.onclick = () => abrirDM(m.dataset.user);
+        });
+      });
+    }
+
+    async function pushMsg(extra = {}){
       if (!user) return;
-      if (canalAtual==="pilares" && !user.pilar){ alert("Canal #pilares só para Pilares."); return; }
-      const caminho =
+      if (!modoDM && canalAtual === "pilares" && !user.pilar) {
+        alert("Canal #pilares só para Pilares.");
+        return;
+      }
+      if (modoDM && !alvoDM) return;
 
-modoDM
-
-?
-
-`smn/dm/${
-  gerarDMId(
-    user.nome,
-    alvoDM
-  )
-}`
-
-:
-
-`smn/canais/${canalAtual}/msgs`;
-
-await push(
-
-  ref(
-    db,
-    caminho
-  ),{
-        uid:user.uid, nome:user.nome, cargo:user.cargo,
+      await push(ref(db, caminhoMsgs()), {
+        uid: user.uid,
+        nome: user.nome,
+        cargo: user.cargo,
         texto: extra.texto || "",
         link: extra.link || null,
         imagem: extra.imagem || null,
@@ -922,18 +540,19 @@ await push(
         createdAt: Date.now(),
         reacoes: {}
       });
+
+      if (modoDM && alvoDM) await salvarConversaDM(alvoDM);
     }
 
     async function sendMsg(){
       const texto = el.msgInput.value.trim();
       if (!texto) return;
       el.msgInput.value = "";
-      remove(ref(db, `smn/typing/${canalAtual}/${user.uid}`));
+      remove(ref(db, `${caminhoTyping()}/${user.uid}`));
       await pushMsg({ texto });
     }
 
-    // LINK
-    el.btnLink.onclick = () => { if(user) el.modalLink.classList.add("open"); };
+    el.btnLink.onclick = () => { if (user) el.modalLink.classList.add("open"); };
     el.linkCancel.onclick = () => el.modalLink.classList.remove("open");
     el.linkOk.onclick = async () => {
       const url = el.linkUrl.value.trim();
@@ -943,12 +562,12 @@ await push(
         link: { url, nome: el.linkNome.value.trim() || url }
       });
       el.msgInput.value = "";
-      el.linkUrl.value = ""; el.linkNome.value = "";
+      el.linkUrl.value = "";
+      el.linkNome.value = "";
       el.modalLink.classList.remove("open");
     };
 
-    // IMAGEM leve
-    el.btnImg.onclick = () => { if(user) el.imgInput.click(); };
+    el.btnImg.onclick = () => { if (user) el.imgInput.click(); };
     el.imgInput.onchange = () => {
       const file = el.imgInput.files?.[0];
       if (!file) return;
@@ -981,7 +600,6 @@ await push(
       el.imgInput.value = "";
     };
 
-    // ÁUDIO
     async function toggleAudio(){
       if (!user) return;
       if (!gravando) {
@@ -995,9 +613,7 @@ await push(
             const blob = new Blob(audioChunks, { type: "audio/webm" });
             if (blob.size > 900000) { alert("Áudio muito grande. Grava mais curto."); return; }
             const reader = new FileReader();
-            reader.onloadend = async () => {
-              await pushMsg({ texto: "", audio: reader.result });
-            };
+            reader.onloadend = async () => { await pushMsg({ texto: "", audio: reader.result }); };
             reader.readAsDataURL(blob);
           };
           mediaRecorder.start();
@@ -1020,56 +636,17 @@ await push(
     }
     el.btnAudio.onclick = toggleAudio;
 
-async function abrirDM(nome){
-
-    if(
-
-        !user ||
-
-        nome === user.nome
-
-    ) return;
-
-    modoDM = true;
-
-    alvoDM = nome;
-
-    await salvarConversaDM(
-
-        nome
-
-    );
-
-    el.canalTitulo.textContent =
-
-    "💬 " + nome;
-
-    listenDM(nome);
-
-}
-function gerarDMId(
-
-  usuarioA,
-
-  usuarioB
-
-){
-
-  return [
-
-    norm(usuarioA),
-
-    norm(usuarioB)
-
-  ]
-
-  .sort()
-
-  .join("_");
-
-}
-
-
+    async function abrirDM(nome){
+      if (!user || !nome || norm(nome) === norm(user.nome)) return;
+      modoDM = true;
+      alvoDM = nome;
+      document.querySelectorAll(".channel").forEach(b => b.classList.remove("active"));
+      el.canalTitulo.textContent = "💬 " + nome;
+      el.modoLabel.textContent = "Mensagem privada";
+      await salvarConversaDM(nome);
+      listenDM(nome);
+      carregarConversas();
+    }
 
     function login(){
       const nomeDigitado = el.nome.value.trim();
@@ -1089,7 +666,7 @@ function gerarDMId(
       if (senha !== conta.senha) { el.loginErro.textContent = "Senha incorreta."; return; }
 
       user = {
-        uid: key.replace(/\s+/g,"-"),
+        uid: uidFromName(nomeDigitado),
         nome: nomeDigitado.replace(/\b\w/g, c => c.toUpperCase()),
         cargo: conta.cargo,
         pilar: !!conta.pilar
@@ -1111,29 +688,29 @@ function gerarDMId(
     document.querySelectorAll(".channel").forEach(btn => {
       btn.addEventListener("click", () => {
         modoDM = false;
-
         alvoDM = null;
-
         const canal = btn.dataset.canal;
-        if (canal==="pilares" && user && !user.pilar){ alert("Só Pilares."); return; }
-        document.querySelectorAll(".channel").forEach(b=>b.classList.remove("active"));
+        if (canal === "pilares" && user && !user.pilar) { alert("Só Pilares."); return; }
+        document.querySelectorAll(".channel").forEach(b => b.classList.remove("active"));
         btn.classList.add("active");
         canalAtual = canal;
         el.canalTitulo.textContent = "# " + canal;
+        el.modoLabel.textContent = "Mensagens em tempo real";
         if (user) listenCanal(canal);
+        if (user) carregarConversas();
       });
     });
 
     el.btnLogin.onclick = login;
-    el.senha.addEventListener("keydown", e => { if(e.key==="Enter") login(); });
-    el.nome.addEventListener("keydown", e => { if(e.key==="Enter") login(); });
+    el.senha.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
+    el.nome.addEventListener("keydown", e => { if (e.key === "Enter") login(); });
     el.btnSend.onclick = sendMsg;
-    el.msgInput.addEventListener("keydown", e => { if(e.key==="Enter") sendMsg(); });
+    el.msgInput.addEventListener("keydown", e => { if (e.key === "Enter") sendMsg(); });
 
-    try{
-      const saved = JSON.parse(localStorage.getItem("smn_user")||"null");
+    try {
+      const saved = JSON.parse(localStorage.getItem("smn_user") || "null");
       if (saved?.nome) el.nome.value = saved.nome;
-    }catch{}
+    } catch {}
   </script>
 </body>
 </html>
